@@ -1,5 +1,6 @@
 
 
+E-shop project with user login/registration and adding products to cart.
 
 To run this project you need to install elasticsearch.
 
