@@ -3,7 +3,6 @@ const User = require('../models/user');
 const Cart = require('../models/cart');
 const passport = require('passport');
 const async = require('async');
-const passportConf = require('../config/passport');
 
 
 
