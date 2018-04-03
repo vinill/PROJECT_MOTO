@@ -42,5 +42,3 @@ router.get('/:name',async (req,res,next)=>{
 
 
 module.exports = router;
-
-// produkt.image = 'https://picsum.photos/320/240/?image='+i;
