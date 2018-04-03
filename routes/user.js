@@ -1,7 +1,10 @@
 const router = require('express').Router();
 const User = require('../models/user');
+const Cart = require('../models/cart');
 const passport = require('passport');
+const async = require('async');
 const passportConf = require('../config/passport');
+
 
 
 router.get('/login', (req,res)=>{
@@ -27,30 +30,43 @@ router.get('/signup',(req,res)=>{
     });
 });
 
-router.post('/signup',(req,res,next)=>{
-    let user = new User();
+router.post('/signup', (req,res,next)=>{
 
-    user.profile.name = req.body.name;
-    user.email = req.body.email;
-    user.password = req.body.password;
-    user.profile.picture = user.gravatar();
+    async.waterfall([
+        function(callback) {
+            var user = new User();
 
-    User.findOne({ email:req.body.email }, (err, exisingUser)=>{
+            user.profile.name = req.body.name;
+            user.email = req.body.email;
+            user.password = req.body.password;
+            user.profile.picture = user.gravatar();
 
-        if(exisingUser){
-            req.flash('errors', 'Acoount with that email already exists');
-            return res.redirect('/signup');
-        } else {
-            user.save((err,user)=>{
-                if (err) return next(err);
+            User.findOne({ email: req.body.email }, function(err, existingUser) {
 
-                req.logIn(user, (err)=>{
-                    if(err) return next(err);
-                    res.redirect('/profile');
-                })
+                if (existingUser) {
+                    req.flash('errors', 'Account with that email address already exists');
+                    return res.redirect('/signup');
+                } else {
+                    user.save(function(err, user) {
+                        if (err) return next(err);
+                        callback(null, user);
+                    });
+                }
             });
-        };
-    });
+        },
+
+        function(user) {
+            var cart = new Cart();
+            cart.owner = user._id;
+            cart.save(function(err) {
+                if (err) return next(err);
+                req.logIn(user, function(err) {
+                    if (err) return next(err);
+                    res.redirect('/profile');
+                });
+            });
+        }
+    ]);
 });
 
 router.get('/logout',(req,res,next)=>{

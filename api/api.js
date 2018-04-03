@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const faker = require('faker');
+var async = require('async');
 const Category = require('../models/category');
 const Product = require('../models/produkt');
 
@@ -16,27 +17,30 @@ router.post('/search',(req,res,next)=>{
 });
 
 router.get('/:name',async (req,res,next)=>{
-    try {
+    async.waterfall([
+        function(callback) {
+            Category.findOne({ name: req.params.name }, function(err, category) {
+                if (err) return next(err);
+                callback(null, category);
+            });
+        },
 
-        const category = await Category.findOne({name:req.params.name});
+        function(category, callback) {
+            for (var i = 0; i < 30; i++) {
+                var product = new Product();
+                product.category = category._id;
+                product.name = faker.commerce.productName();
+                product.price = faker.commerce.price();
+                product.image = 'https://picsum.photos/320/240/?image='+i;
 
-        for(let i = 0;i < 20; i++){
-             const produkt = new Produkt();
-             produkt.category=category._id;
-             produkt.name = faker.commerce.productName();
-             produkt.price = faker.commerce.price();
-             produkt.image = 'https://picsum.photos/320/240/?image='+i;
-             produkt.save();
+                product.save();
+            }
         }
-
-    } catch (e) {
-        console.log(e);
-    }
-
-
-    res.send({message: 'Success'})
+    ]);
+    res.json({ message: 'Success' });
 });
 
 
-
 module.exports = router;
+
+// produkt.image = 'https://picsum.photos/320/240/?image='+i;
