@@ -15,6 +15,11 @@ Run  Node.js Server
     $ npm install 
     $ nodemon server.js
 
+Default user login:
+
+`Login: user@email.com`
+`Password: 123`
+
 If you have error while starting the server(error: No Living connections
 )  simple restart elasticsearch service or reload terminal
 
